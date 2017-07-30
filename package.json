@@ -1,0 +1,8 @@
+{
+  "name": "elm-shopping",
+  "version": "0.1.0",
+  "description": "Shopping list creation in elm",
+  "main": "index.js",
+  "author": "James Murphy <james@recumbent.co.uk>",
+  "license": "MIT"
+}
