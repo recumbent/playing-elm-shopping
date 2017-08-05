@@ -63,3 +63,56 @@ main =
 So the program takes a model, a view function and an update function and then knows how to run them.
 
 You'll want to .gitignore the elm-stuff folder at this point!
+
+Elm does awesome type inference, but we can help the reader of the code by adding type annotations - the compiler will hint these for us - and apply elm-format and you get
+
+```
+module Main exposing (..)
+
+import Html exposing (Html, h1, text)
+
+
+-- MODEL
+
+
+type alias Model =
+    String
+
+
+model : Model
+model =
+    "Hello World!"
+
+
+
+-- UPDATE
+
+
+type Msg
+    = NOOP
+
+
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        NOOP ->
+            model
+
+
+
+-- VIEW
+
+
+view : Model -> Html msg
+view model =
+    h1 [] [ text model ]
+
+
+
+-- Stitch it all together
+
+
+main : Program Never Model Msg
+main =
+    Html.beginnerProgram { model = model, view = view, update = update }
+```
