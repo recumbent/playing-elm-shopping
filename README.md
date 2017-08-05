@@ -7,10 +7,13 @@ Create shopping lists using a web app build in Elm.
 Attempt to progress in easy stages to build something useful
 
 ## Done
+
+[x] Setup and initialisation
+[x] Hello world
+
 ## To Do
 
-[] Setup and initialisation
-[] Textbox, button, hello world
+[] Textbox, button, hello someone
 [] Dynamic hello world from text in box
 [] Button clears box
 [] Button adds to list and clears box
