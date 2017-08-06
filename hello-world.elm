@@ -1,21 +1,24 @@
 module Main exposing (..)
 
-import Html exposing (Html, h1, text, div, input, Attribute)
+import Html exposing (Html, h1, text, div, input, Attribute, button)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput)
+import Html.Events exposing (keyCode, on, onInput, onClick)
+import Json.Decode as Json
 
 
 -- MODEL
 
 
 type alias Model =
-    { name : String
+    { inputText : String
+    , name : String
     }
 
 
 model : Model
 model =
-    { name = "World!"
+    { inputText = ""
+    , name = "World"
     }
 
 
@@ -25,13 +28,17 @@ model =
 
 type Msg
     = Change String
+    | Update
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         Change text ->
-            { model | name = text }
+            { model | inputText = text }
+
+        Update ->
+            { model | name = model.inputText, inputText = "" }
 
 
 
@@ -42,10 +49,33 @@ view : Model -> Html Msg
 view model =
     div []
         [ div []
-            [ input [ placeholder "Name to greet", onInput Change ] []
+            [ input
+                [ placeholder "Name to greet"
+                , onInput Change
+                , onEnter Update
+                , value model.inputText
+                ]
+                []
             ]
-        , h1 [] [ text ("Hello " ++ model.name) ]
+        , button [ onClick Update ] [ text "Update" ]
+        , h1 [] [ text ("Hello " ++ model.name ++ "!") ]
         ]
+
+
+
+-- Borrowed from https://github.com/evancz/elm-todomvc/blob/master/Todo.elm
+
+
+onEnter : Msg -> Attribute Msg
+onEnter msg =
+    let
+        isEnter code =
+            if code == 13 then
+                Json.succeed msg
+            else
+                Json.fail "not ENTER"
+    in
+        on "keydown" (Json.andThen isEnter keyCode)
 
 
 
