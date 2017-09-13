@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (Html, h1, text, div, input, Attribute, button)
+import Html exposing (Html, h1, text, div, input, Attribute, button, ul, li)
 import Html.Attributes exposing (..)
 import Html.Events exposing (keyCode, on, onInput, onClick)
 import Json.Decode as Json
@@ -11,14 +11,14 @@ import Json.Decode as Json
 
 type alias Model =
     { inputText : String
-    , name : String
+    , items : List String
     }
 
 
 model : Model
 model =
     { inputText = ""
-    , name = "World"
+    , items = []
     }
 
 
@@ -38,7 +38,7 @@ update msg model =
             { model | inputText = text }
 
         Update ->
-            { model | name = model.inputText, inputText = "" }
+            { model | items = model.inputText :: model.items, inputText = "" }
 
 
 
@@ -50,15 +50,16 @@ view model =
     div []
         [ div []
             [ input
-                [ placeholder "Name to greet"
+                [ placeholder "Value to add"
                 , onInput Change
                 , onEnter Update
                 , value model.inputText
                 ]
                 []
             ]
-        , button [ onClick Update ] [ text "Update" ]
-        , h1 [] [ text ("Hello " ++ model.name ++ "!") ]
+        , button [ onClick Update ] [ text "add" ]
+        , h1 [] [ text ("A list of items!") ]
+        , ul [] (List.map (\i -> li [] [ text i ]) model.items)
         ]
 
 
