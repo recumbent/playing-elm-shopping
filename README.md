@@ -13,11 +13,11 @@ Attempt to progress in easy stages to build something useful
 * [x] Textbox, button, hello someone
 * [x] Dynamic hello world from text in box
 * [x] Button clears box
+* [x] Button adds to list and clears box
+* [x] Or hitting enter in the textbox
 
 ## To Do
 
-* [] Button adds to list and clears box
-* [] Or hitting enter in the textbox
 * [] List (show) only entries that match entered text (all if no text)
 * [] Toggle - or at least mark - first entry matching text on enter (show as checkbox)
 * [] Match selected status to checkbox
