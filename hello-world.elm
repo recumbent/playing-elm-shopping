@@ -59,10 +59,12 @@ view model =
             ]
         , button [ onClick Update ] [ text "add" ]
         , h1 [] [ text ("A list of items!") ]
-        , ul [] (List.map (\i -> li [] [ text i ]) model.items)
+        , ul [] (List.map (\i -> li [] [ text i ]) (matchingItems model))
         ]
 
-
+matchingItems : { a | inputText : String, items : List String } -> List String
+matchingItems model =
+    List.filter (\item -> String.contains (String.toLower model.inputText) (String.toLower item)) model.items
 
 -- Borrowed from https://github.com/evancz/elm-todomvc/blob/master/Todo.elm
 
