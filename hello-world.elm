@@ -42,13 +42,23 @@ update msg model =
             { model | inputText = text }
 
         Update ->
-            let
-                maxId = Maybe.withDefault 0 (List.maximum (List.map (\i -> i.id) model.items))
-            in
-                { model | items = (Item (maxId + 1) model.inputText True) :: model.items, inputText = "" }
+            case List.head (matchingItems model.inputText model.items) of
+                Just item ->
+                    { model | items = (setItemRequired item.id True model.items), inputText = "" }
+
+                Nothing ->
+                    let
+                        maxId = Maybe.withDefault 0 (List.maximum (List.map (\i -> i.id) model.items))
+                    in
+                        { model | items = List.sortBy .name ((Item (maxId + 1) model.inputText True) :: model.items), inputText = "" }
 
         ToggleRequired id state ->
-            { model | items = List.map (\i -> if i.id == id then { i | required = state } else i) model.items }
+            { model | items = setItemRequired id state model.items }
+
+
+setItemRequired : Int -> Bool -> List Item -> List Item
+setItemRequired id state items =
+    List.map (\i -> if i.id == id then { i | required = state } else i) items
 
 -- VIEW
 
@@ -68,7 +78,7 @@ view model =
         , button [ onClick Update ] [ text "add" ]
         , h1 [] [ text ("A list of items!") ]
         , h2 [] [ text ("Items required: " ++ (toString (List.length (List.filter (\i -> i.required) model.items)))) ]
-        , itemsView (matchingItems model)
+        , itemsView (matchingItems model.inputText model.items)
         ]
 
 itemsView : List Item -> Html Msg
@@ -93,9 +103,9 @@ itemView item =
         , td [] [ input [ type_ "checkbox", (checked item.required), onCheck (ToggleRequired item.id) ] [] ]
         ]
 
-matchingItems : { b | inputText : String, items : List { a | name : String } } -> List { a | name : String }
-matchingItems model =
-    List.filter (\item -> String.contains (String.toLower model.inputText) (String.toLower item.name)) model.items
+matchingItems : String -> List { a | name : String } -> List { a | name : String }
+matchingItems textToMatch items =
+    List.filter (\item -> String.contains (String.toLower textToMatch) (String.toLower item.name)) items
 
 -- Borrowed from https://github.com/evancz/elm-todomvc/blob/master/Todo.elm
 

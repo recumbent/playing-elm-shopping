@@ -16,9 +16,10 @@ Attempt to progress in easy stages to build something useful
 * [x] Button adds to list and clears box
 * [x] Or hitting enter in the textbox
 * [x] List (show) only entries that match entered text (all if no text)
+* [x] Toggle - or at least mark - first entry matching text on enter (show as checkbox)
+* [x] Match selected status to checkbox
 
 ## To Do
 
-
-* [] Toggle - or at least mark - first entry matching text on enter (show as checkbox)
-* [] Match selected status to checkbox
+* [] Cursor keys (option) 
+* [] Interact with server
