@@ -5,13 +5,17 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (keyCode, on, onInput, onClick)
 import Json.Decode as Json
 
-
 -- MODEL
 
+type alias Item = 
+    { id : Int
+    , name : String
+    , required : Bool
+    }
 
 type alias Model =
     { inputText : String
-    , items : List String
+    , items : List Item
     }
 
 
@@ -38,8 +42,10 @@ update msg model =
             { model | inputText = text }
 
         Update ->
-            { model | items = model.inputText :: model.items, inputText = "" }
-
+            let
+                maxId = Maybe.withDefault 0 (List.maximum (List.map (\i -> i.id) model.items))
+            in
+                { model | items = (Item (maxId + 1) model.inputText True) :: model.items, inputText = "" }
 
 
 -- VIEW
@@ -59,12 +65,20 @@ view model =
             ]
         , button [ onClick Update ] [ text "add" ]
         , h1 [] [ text ("A list of items!") ]
-        , ul [] (List.map (\i -> li [] [ text i ]) (matchingItems model))
+        , itemsView (matchingItems model)
         ]
 
-matchingItems : { a | inputText : String, items : List String } -> List String
+itemsView : List { c | id : a, name : String, required : b } -> Html msg
+itemsView items =
+     ul [] (List.map itemView items)
+
+itemView : { c | id : a, name : String, required : b } -> Html msg
+itemView item =
+    li [] [ text ((toString item.id) ++ " " ++ item.name ++ " " ++ (toString item.required)) ]
+
+matchingItems : { b | inputText : String, items : List { a | name : String } } -> List { a | name : String }
 matchingItems model =
-    List.filter (\item -> String.contains (String.toLower model.inputText) (String.toLower item)) model.items
+    List.filter (\item -> String.contains (String.toLower model.inputText) (String.toLower item.name)) model.items
 
 -- Borrowed from https://github.com/evancz/elm-todomvc/blob/master/Todo.elm
 
