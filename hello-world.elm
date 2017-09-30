@@ -1,8 +1,8 @@
 module Main exposing (..)
 
-import Html exposing (Html, h1, text, div, input, Attribute, button, ul, li)
+import Html exposing (Html, h1, h2, text, div, input, Attribute, button, ul, li, table, thead, tr, th, tbody, td)
 import Html.Attributes exposing (..)
-import Html.Events exposing (keyCode, on, onInput, onClick)
+import Html.Events exposing (keyCode, on, onInput, onClick, onCheck)
 import Json.Decode as Json
 
 -- MODEL
@@ -33,7 +33,7 @@ model =
 type Msg
     = Change String
     | Update
-
+    | ToggleRequired Int Bool
 
 update : Msg -> Model -> Model
 update msg model =
@@ -47,6 +47,8 @@ update msg model =
             in
                 { model | items = (Item (maxId + 1) model.inputText True) :: model.items, inputText = "" }
 
+        ToggleRequired id state ->
+            { model | items = List.map (\i -> if i.id == id then { i | required = state } else i) model.items }
 
 -- VIEW
 
@@ -65,16 +67,31 @@ view model =
             ]
         , button [ onClick Update ] [ text "add" ]
         , h1 [] [ text ("A list of items!") ]
+        , h2 [] [ text ("Items required: " ++ (toString (List.length (List.filter (\i -> i.required) model.items)))) ]
         , itemsView (matchingItems model)
         ]
 
-itemsView : List { c | id : a, name : String, required : b } -> Html msg
+itemsView : List Item -> Html Msg
 itemsView items =
-     ul [] (List.map itemView items)
+    table []
+        [ thead []
+            [
+                tr []
+                    [ th [] [ text "ID" ]
+                    , th [] [ text "Item Name" ]
+                    , th [] [ text "Required?" ]
+                    ]
+            ]
+        , tbody [] (List.map itemView items)
+        ]
 
-itemView : { c | id : a, name : String, required : b } -> Html msg
+itemView : Item -> Html Msg
 itemView item =
-    li [] [ text ((toString item.id) ++ " " ++ item.name ++ " " ++ (toString item.required)) ]
+    tr [] 
+        [ td [] [ text (toString item.id) ]
+        , td [] [ text item.name ]
+        , td [] [ input [ type_ "checkbox", (checked item.required), onCheck (ToggleRequired item.id) ] [] ]
+        ]
 
 matchingItems : { b | inputText : String, items : List { a | name : String } } -> List { a | name : String }
 matchingItems model =
