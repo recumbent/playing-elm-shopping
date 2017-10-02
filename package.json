@@ -4,5 +4,8 @@
   "description": "Shopping list creation in elm",
   "main": "index.js",
   "author": "James Murphy <james@recumbent.co.uk>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "json-server": "^0.12.0"
+  }
 }
