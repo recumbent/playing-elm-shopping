@@ -17,8 +17,17 @@ Attempt to progress in easy stages to build something useful
 * [x] Or hitting enter in the textbox
 * [x] List (show) only entries that match entered text (all if no text)
 
-## To Do
-
+## Done but not pushed?
 
 * [] Toggle - or at least mark - first entry matching text on enter (show as checkbox)
 * [] Match selected status to checkbox
+
+## To Do
+
+* [] Load items from API
+* [] Save new items to API
+* [] Save changes to API
+* [] Shopping view - sorted
+* [] Shopping view - purchase
+* [] Shopping view - set aisle
+* [] Saving all of the above as we go
