@@ -16,11 +16,8 @@ Attempt to progress in easy stages to build something useful
 * [x] Button adds to list and clears box
 * [x] Or hitting enter in the textbox
 * [x] List (show) only entries that match entered text (all if no text)
-
-## Done but not pushed?
-
-* [] Toggle - or at least mark - first entry matching text on enter (show as checkbox)
-* [] Match selected status to checkbox
+* [x] Toggle - or at least mark - first entry matching text on enter (show as checkbox)
+* [x] Match selected status to checkbox
 
 ## To Do
 
@@ -31,3 +28,5 @@ Attempt to progress in easy stages to build something useful
 * [] Shopping view - purchase
 * [] Shopping view - set aisle
 * [] Saving all of the above as we go
+* [] Cursor keys (option) 
+* [] Interact with server
