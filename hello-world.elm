@@ -4,6 +4,8 @@ import Html exposing (Html, h1, h2, text, div, input, Attribute, button, ul, li,
 import Html.Attributes exposing (..)
 import Html.Events exposing (keyCode, on, onInput, onClick, onCheck)
 import Json.Decode as Json
+import RemoteData exposing (..)
+import Http exposing (Error)
 
 -- MODEL
 
@@ -13,18 +15,34 @@ type alias Item =
     , required : Bool
     }
 
+type alias ItemList = List Item
+
 type alias Model =
     { inputText : String
-    , items : List Item
+    , items : RemoteData Error ItemList
     }
-
 
 model : Model
 model =
     { inputText = ""
-    , items = []
+    , items = Loading
     }
 
+init : String -> (Model, Cmd Msg)
+init  =
+  ( model
+  , getItemList
+  )
+
+
+-- COMMAND
+
+-- HTTP
+getNews : Cmd Msg
+getNews =
+    Http.get "http://127.0.0.1:4000/items" decodeItems
+        |> RemoteData.sendRequest
+        |> Cmd.map ItemsResponse
 
 
 -- UPDATE
@@ -34,27 +52,35 @@ type Msg
     = Change String
     | Update
     | ToggleRequired Int Bool
+    | ItemsResponse (RemoteData Error ItemList)
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         Change text ->
             { model | inputText = text }
 
         Update ->
-            case List.head (matchingItems model.inputText model.items) of
-                Just item ->
-                    { model | items = (setItemRequired item.id True model.items), inputText = "" }
+            case model.items of
+                Success itemList ->
+                    case List.head (matchingItems model.inputText itemList) of
+                        Just item ->
+                            { model | items = Success (setItemRequired item.id True itemList), inputText = "" }
 
-                Nothing ->
-                    let
-                        maxId = Maybe.withDefault 0 (List.maximum (List.map (\i -> i.id) model.items))
-                    in
-                        { model | items = List.sortBy .name ((Item (maxId + 1) model.inputText True) :: model.items), inputText = "" }
+                        Nothing ->
+                            let
+                                maxId = Maybe.withDefault 0 (List.maximum (List.map (\i -> i.id) itemList))
+                            in
+                                { model | items = Success (List.sortBy .name ((Item (maxId + 1) model.inputText True) :: itemList)), inputText = "" }
+                _ -> model
 
         ToggleRequired id state ->
-            { model | items = setItemRequired id state model.items }
-
+            case model.items of
+                Success itemList ->
+                    { model | items = Success (setItemRequired id state itemList) }
+                
+                _ ->
+                    model
 
 setItemRequired : Int -> Bool -> List Item -> List Item
 setItemRequired id state items =
@@ -65,21 +91,35 @@ setItemRequired id state items =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ div []
-            [ input
-                [ placeholder "Value to add"
-                , onInput Change
-                , onEnter Update
-                , value model.inputText
+    case model.items of
+        NotAsked ->
+            div []
+                [ h1 [] [ text "Should never see this" ] ]
+
+        Loading ->
+            div []
+                [ h1 [] [ text "Loading items..." ] ]
+            
+        Failure err ->
+            div []
+                [ h1 [] [ text ("HTTP Failure" ++ (toString err)) ] ]
+        
+        Success items ->
+            div []
+                [ div []
+                    [ input
+                        [ placeholder "Value to add"
+                        , onInput Change
+                        , onEnter Update
+                        , value model.inputText
+                        ]
+                        []
+                    ]
+                , button [ onClick Update ] [ text "add" ]
+                , h1 [] [ text ("A list of items!") ]
+                , h2 [] [ text ("Items required: " ++ (toString (List.length (List.filter (\i -> i.required) items)))) ]
+                , itemsView (matchingItems model.inputText items)
                 ]
-                []
-            ]
-        , button [ onClick Update ] [ text "add" ]
-        , h1 [] [ text ("A list of items!") ]
-        , h2 [] [ text ("Items required: " ++ (toString (List.length (List.filter (\i -> i.required) model.items)))) ]
-        , itemsView (matchingItems model.inputText model.items)
-        ]
 
 itemsView : List Item -> Html Msg
 itemsView items =
@@ -107,6 +147,7 @@ matchingItems : String -> List { a | name : String } -> List { a | name : String
 matchingItems textToMatch items =
     List.filter (\item -> String.contains (String.toLower textToMatch) (String.toLower item.name)) items
 
+
 -- Borrowed from https://github.com/evancz/elm-todomvc/blob/master/Todo.elm
 
 
@@ -125,7 +166,10 @@ onEnter msg =
 
 -- Stitch it all together
 
-
-main : Program Never Model Msg
 main =
-    Html.beginnerProgram { model = model, view = view, update = update }
+  Html.program
+    { init = init
+    , view = view
+    , update = update
+    , subscriptions = Sub.none
+    }

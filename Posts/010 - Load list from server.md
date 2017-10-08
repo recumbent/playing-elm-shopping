@@ -6,7 +6,8 @@ Given the simple server we've set up lets start by reading the data from the API
 
 To do this we're going to introduce commands and a helper type, lets start by adding the helper:
 
-` elm package install krisajenkins/remotedata`
+`elm package install elm-lang/http`
+`elm package install krisajenkins/remotedata`
 
 And importing the package into our application
 
@@ -19,7 +20,7 @@ This gives us `RemoteData` and a specialsed case `WebData`.
 We'll change the model, introducing some new type aliases
 
 ```elm
-type alias ItemList = List String
+type alias ItemList = List Item
 
 type alias Model =
     { inputText : String
@@ -35,3 +36,5 @@ model =
 ```
 
 And add a new option to the message
+
+Ok, all over the place here, need this: https://guide.elm-lang.org/interop/json.html
