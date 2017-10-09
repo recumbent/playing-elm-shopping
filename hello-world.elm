@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (keyCode, on, onInput, onClick, onCheck)
 import Json.Decode as Json
 import Json.Decode.Pipeline as Pipeline
+import Json.Encode as Encode
 import RemoteData exposing (..)
 import Http exposing (Error)
 
@@ -38,21 +39,51 @@ init  =
 
 -- COMMAND
 
--- HTTP
 getItemList : Cmd Msg
 getItemList =
     Http.get "http://127.0.0.1:4000/items" decodeItems
         |> RemoteData.sendRequest
         |> Cmd.map ItemsResponse
 
+decodeItems : Json.Decoder (List Item)
 decodeItems =
     (Json.list itemDecoder)
 
+itemDecoder : Json.Decoder Item
 itemDecoder =
     Pipeline.decode Item 
     |> Pipeline.required "id" Json.int
     |> Pipeline.required "name" Json.string
     |> Pipeline.required "required" Json.bool
+
+
+itemUrl id = 
+    "http://127.0.0.1:4000/items/" ++ (toString id)
+
+setItemStateRequest id state =
+    Http.request
+        { body = itemStateEncoder state |> Http.jsonBody
+        , expect = Http.expectJson itemDecoder
+        , headers = []
+        , method = "PATCH"
+        , timeout = Nothing
+        , url = itemUrl id
+        , withCredentials = False
+        }
+
+itemStateEncoder : Bool -> Encode.Value
+itemStateEncoder required =
+    let
+        attributes = 
+            [ ("required", Encode.bool required ) ]
+    in
+        Encode.object attributes
+
+setItemStateCmd id state =
+    setItemStateRequest id state
+    |> RemoteData.sendRequest
+    |> Cmd.map OnSetItemState
+
 
 -- UPDATE
 
@@ -62,6 +93,7 @@ type Msg
     | Update
     | ToggleRequired Int Bool
     | ItemsResponse (RemoteData Error ItemList)
+    | OnSetItemState (RemoteData Error Item)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -80,24 +112,36 @@ update msg model =
                             let
                                 maxId = Maybe.withDefault 0 (List.maximum (List.map (\i -> i.id) itemList))
                             in
-                                { model | items = Success (List.sortBy .name ((Item (maxId + 1) model.inputText True) :: itemList)), inputText = "" }
+                                { model | items = Success (sortItemsForList ((Item (maxId + 1) model.inputText True) :: itemList)), inputText = "" }
                 _ -> model), Cmd.none)
 
         ToggleRequired id state ->
             case model.items of
-                Success itemList ->
-                    ({ model | items = Success (setItemRequired id state itemList) }, Cmd.none)
+                Success itemList ->                    
+                    ({ model | items = Success (setItemRequired id state itemList) }, (setItemStateCmd id state))
                 
                 _ ->
                     (model, Cmd.none)
                     
         ItemsResponse rd ->
-            ({ model | items = rd}, Cmd.none)
-            
+            let
+                itemData = case rd of
+                    Success itemList -> Success (sortItemsForList itemList)
+                    _ -> rd
+            in
+                ({ model | items = itemData}, Cmd.none)
+
+        OnSetItemState rd ->
+                    (model, Cmd.none)
+        
 setItemRequired : Int -> Bool -> List Item -> List Item
 setItemRequired id state items =
     List.map (\i -> if i.id == id then { i | required = state } else i) items
 
+sortItemsForList : List { a | name : comparable } -> List { a | name : comparable }
+sortItemsForList =
+    List.sortBy .name
+    
 -- VIEW
 
 
