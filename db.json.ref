@@ -1,49 +1,49 @@
 {
     "items": [
         {
-            "id": "1",
+            "id": 1,
             "name": "Bread",
             "aisle" : null,
             "required": false
         },
         {
-            "id": "2",
+            "id": 2,
             "name": "Butter",
             "aisle" : null,
             "required": false
         },
         {
-            "id": "3",
+            "id": 3,
             "name": "Milk",
             "aisle" : null,
             "required": false
         },
         {
-            "id": "4",
+            "id": 4,
             "name": "Tea",
             "aisle" : null,
             "required": false
         },
         {
-            "id": "5",
+            "id": 5,
             "name": "Coffee",
             "aisle" : null,
             "required": false
         },
         {
-            "id": "6",
+            "id": 6,
             "name": "Sugar",
             "aisle" : null,
             "required": false
         },
         {
-            "id": "7",
+            "id": 7,
             "name": "Marmite",
             "aisle" : null,
             "required": false
         },
         {
-            "id": "8",
+            "id": 8,
             "name": "Beer",
             "aisle" : null,
             "required": false
