@@ -4,6 +4,7 @@ import Html exposing (Html, h1, h2, text, div, input, Attribute, button, ul, li,
 import Html.Attributes exposing (..)
 import Html.Events exposing (keyCode, on, onInput, onClick, onCheck)
 import Json.Decode as Json
+import Json.Decode.Pipeline as Pipeline
 import RemoteData exposing (..)
 import Http exposing (Error)
 
@@ -28,7 +29,7 @@ model =
     , items = Loading
     }
 
-init : String -> (Model, Cmd Msg)
+init : (Model, Cmd Msg)
 init  =
   ( model
   , getItemList
@@ -38,12 +39,20 @@ init  =
 -- COMMAND
 
 -- HTTP
-getNews : Cmd Msg
-getNews =
+getItemList : Cmd Msg
+getItemList =
     Http.get "http://127.0.0.1:4000/items" decodeItems
         |> RemoteData.sendRequest
         |> Cmd.map ItemsResponse
 
+decodeItems =
+    (Json.list itemDecoder)
+
+itemDecoder =
+    Pipeline.decode Item 
+    |> Pipeline.required "id" Json.int
+    |> Pipeline.required "name" Json.string
+    |> Pipeline.required "required" Json.bool
 
 -- UPDATE
 
@@ -171,5 +180,5 @@ main =
     { init = init
     , view = view
     , update = update
-    , subscriptions = Sub.none
+    , subscriptions = \_ -> Sub.none
     }

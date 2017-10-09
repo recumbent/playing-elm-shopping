@@ -38,3 +38,24 @@ model =
 And add a new option to the message
 
 Ok, all over the place here, need this: https://guide.elm-lang.org/interop/json.html
+
+And then [NoRedInk/elm-decode-pipeline](http://package.elm-lang.org/packages/NoRedInk/elm-decode-pipeline/latest)
+
+Then the party trick is to import Json.Decode and Json.Decode.Pipeline the latter lets us run the pipeline as below
+
+```elm
+itemDecoder = decode Item 
+    |> required "id" int
+    |> required "name" string
+    |> required "required" bool
+```
+
+Which will let me decode a single item and can be combined with list...
+
+```elm
+decodeString (list itemDecode) itemsJson
+```
+
+Next step in the party games is to add a nullable aisle.
+
+Then we need to write back to the "server"
