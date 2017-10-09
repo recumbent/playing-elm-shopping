@@ -67,10 +67,10 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         Change text ->
-            { model | inputText = text }
+            ({ model | inputText = text }, Cmd.none)
 
         Update ->
-            case model.items of
+            ((case model.items of
                 Success itemList ->
                     case List.head (matchingItems model.inputText itemList) of
                         Just item ->
@@ -81,16 +81,19 @@ update msg model =
                                 maxId = Maybe.withDefault 0 (List.maximum (List.map (\i -> i.id) itemList))
                             in
                                 { model | items = Success (List.sortBy .name ((Item (maxId + 1) model.inputText True) :: itemList)), inputText = "" }
-                _ -> model
+                _ -> model), Cmd.none)
 
         ToggleRequired id state ->
             case model.items of
                 Success itemList ->
-                    { model | items = Success (setItemRequired id state itemList) }
+                    ({ model | items = Success (setItemRequired id state itemList) }, Cmd.none)
                 
                 _ ->
-                    model
-
+                    (model, Cmd.none)
+                    
+        ItemsResponse rd ->
+            ({ model | items = rd}, Cmd.none)
+            
 setItemRequired : Int -> Bool -> List Item -> List Item
 setItemRequired id state items =
     List.map (\i -> if i.id == id then { i | required = state } else i) items
