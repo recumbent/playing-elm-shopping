@@ -56,10 +56,11 @@ itemDecoder =
     |> Pipeline.required "name" Json.string
     |> Pipeline.required "required" Json.bool
 
-
+itemUrl : a -> String
 itemUrl id = 
     "http://127.0.0.1:4000/items/" ++ (toString id)
 
+setItemStateRequest : a -> Bool -> Http.Request Item
 setItemStateRequest id state =
     Http.request
         { body = itemStateEncoder state |> Http.jsonBody
@@ -78,7 +79,8 @@ itemStateEncoder required =
             [ ("required", Encode.bool required ) ]
     in
         Encode.object attributes
-
+        
+setItemStateCmd : a -> Bool -> Cmd Msg
 setItemStateCmd id state =
     setItemStateRequest id state
     |> RemoteData.sendRequest
