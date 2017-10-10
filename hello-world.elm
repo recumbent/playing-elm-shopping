@@ -86,6 +86,27 @@ setItemStateCmd id state =
     |> RemoteData.sendRequest
     |> Cmd.map OnSetItemState
 
+newItemRequest item =
+    let
+        itemBody = itemEncoder item |> Http.jsonBody
+    in
+        Http.post "http://127.0.0.1:4000/items"  itemBody itemDecoder
+
+itemEncoder item =
+    let
+        attributes =
+            [ ( "id", Encode.int item.id )
+            , ( "name", Encode.string item.name )
+            , ( "required", Encode.bool item.required )
+            ]
+    in
+        Encode.object attributes
+
+
+newItemCmd item =
+    newItemRequest item
+    |> RemoteData.sendRequest
+    |> Cmd.map OnNewItem
 
 -- UPDATE
 
@@ -96,6 +117,7 @@ type Msg
     | ToggleRequired Int Bool
     | ItemsResponse (RemoteData Error ItemList)
     | OnSetItemState (RemoteData Error Item)
+    | OnNewItem (RemoteData Error Item)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -104,18 +126,20 @@ update msg model =
             ({ model | inputText = text }, Cmd.none)
 
         Update ->
-            ((case model.items of
+            case model.items of
                 Success itemList ->
                     case List.head (matchingItems model.inputText itemList) of
                         Just item ->
-                            { model | items = Success (setItemRequired item.id True itemList), inputText = "" }
+                            ({ model | items = Success (setItemRequired item.id True itemList), inputText = "" }, (setItemStateCmd item.id True))
 
                         Nothing ->
                             let
                                 maxId = Maybe.withDefault 0 (List.maximum (List.map (\i -> i.id) itemList))
+                                nextId = maxId + 1
+                                newItem = Item nextId model.inputText True
                             in
-                                { model | items = Success (sortItemsForList ((Item (maxId + 1) model.inputText True) :: itemList)), inputText = "" }
-                _ -> model), Cmd.none)
+                                ({ model | items = Success (sortItemsForList (newItem :: itemList)), inputText = "" }, newItemCmd newItem)
+                _ -> (model, Cmd.none)
 
         ToggleRequired id state ->
             case model.items of
@@ -134,7 +158,10 @@ update msg model =
                 ({ model | items = itemData}, Cmd.none)
 
         OnSetItemState rd ->
-                    (model, Cmd.none)
+            (model, Cmd.none)
+
+        OnNewItem rd ->
+            (model, Cmd.none)
         
 setItemRequired : Int -> Bool -> List Item -> List Item
 setItemRequired id state items =
@@ -160,7 +187,7 @@ view model =
             
         Failure err ->
             div []
-                [ h1 [] [ text ("HTTP Failure" ++ (toString err)) ] ]
+                [ h1 [] [ text ("HTTP Failure: " ++ (toString err)) ] ]
         
         Success items ->
             div []

@@ -59,3 +59,11 @@ decodeString (list itemDecode) itemsJson
 Next step in the party games is to add a nullable aisle.
 
 Then we need to write back to the "server"
+
+Look to use the update function which will look like
+
+update functionToDoSomethingToAnItemListReturningModelCommaCommand rd
+
+so the function is a -> (b, Cmd c)
+
+If the rd is not success it returns (rd, Cmd.none)
